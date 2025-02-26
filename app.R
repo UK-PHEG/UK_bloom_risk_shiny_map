@@ -7,6 +7,9 @@ library(dplyr)
 library(shiny)
 library(raster)
 library(tools)
+library(RColorBrewer)
+library(ncdf4)
+library(shinyjs)
 
 #load the supporting functions
 source("app_functions.R")
@@ -30,6 +33,14 @@ for (file in nc_files){
 # Remove data no longer needed
 rm(nc_files)
 
+# assign classes for raster values
+classes <- data.frame(num = sort(unique(unlist(lapply(r_list, values)))),
+                      cat = c("Regular risk", 
+                              "Sporadic risk", 
+                              "Regular and sporadic risk"
+                              )
+                      )
+
 ##################################################################################################################################
 # UI
 ##################################################################################################################################
@@ -52,7 +63,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
-  # Split the lifeform pairs string into the two lifeforms
+  # React to the selection of Season by selecting the correct raster
   r_season <- reactive({
     if (!is.null(input$season) &&
       input$season != "Please make a selection") {
@@ -68,7 +79,14 @@ server <- function(input, output, session) {
   output$map1 <- renderLeaflet({
     if (!is.null(r_season())) {
       debug_msg("Generating map1")
-      leaflet_temp <- generate_map(r_season())
+
+      # Create a color palette
+      pal <- colorFactor(palette = brewer.pal(length(unique(r_season()[])), "Set1"), 
+                         domain = r_season()[],
+                         na.color = "transparent")
+      print(classes)
+      leaflet_temp <- generate_map(r_season(), pal, classes)
+      
     } else {
       leaflet_temp <- NULL
     }
