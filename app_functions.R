@@ -13,10 +13,20 @@ generate_map <- function(x, pal, classes) {
     c(ext@xmin, ext@ymin) # Close the polygon
   ))
   
+  #filter the raster input to respond to layer selection from addLayersControls
+  x_regular <- x
+  x_regular[x_regular == 2] <- NA
+  x_regular[x_regular == 3] <- 1
+  
+  x_sporadic <- x
+  x_sporadic[x == 1] <- NA
+  x_sporadic[x == x_sporadic] <- 2
+  
   # generate leaflet
   temp_map <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     addProviderTiles(providers$CartoDB.Positron) %>%
-    addRasterImage(x, colors = pal, opacity = 0.6) %>%
+    addRasterImage(x_regular, group = classes$cat[classes$num==1], colors = pal, opacity = 0.6) %>%
+    addRasterImage(x_sporadic, group = classes$cat[classes$num==2], colors = pal, opacity = 0.6)
     addPolygons(
       lng = unlist(lapply(polygon_coords[[1]], function(coord) coord[1])),
       lat = unlist(lapply(polygon_coords[[1]], function(coord) coord[2])),
@@ -31,7 +41,8 @@ generate_map <- function(x, pal, classes) {
     ) %>%
     htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'bottomright' }).addTo(this);
-      }")
+      }") %>%
+    addLayersControl(overlayGroups = unique(classes$cat))
   
   return(temp_map)
 }
