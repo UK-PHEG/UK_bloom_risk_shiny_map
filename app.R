@@ -7,7 +7,6 @@ library(dplyr)
 library(shiny)
 library(raster)
 library(tools)
-library(RColorBrewer)
 library(ncdf4)
 library(shinyjs)
 
@@ -16,6 +15,8 @@ source("app_functions.R")
 
 #define order of seasons
 seasons <- c("winter", "spring", "summer", "autumn")
+seasons_labels <- seasons
+names(seasons_labels) <- tools::toTitleCase(seasons)
 
 # List NC files, open and combine
 nc_files <- list.files("data/", full.names = T)
@@ -28,30 +29,15 @@ order_mapping <- sapply(nc_files, function(x) {
 # Reorder filenames vector based on the mapping
 nc_files <- nc_files[order(order_mapping)]
 
-r_list <- list()
-for (file in nc_files){
-  r <- raster::raster(file, varname="CHL")
-  
-  r[r==0] <- NA
-  
-  # Extract the string after the last underscore and before '.nc'
-  season <- sub(".*_(.*?)\\.nc", "\\1", file)
-  season <- tools::toTitleCase(season)
-  
-  r_list[[season]] <- r
-  rm(file, r, season)
-}
-
 # assign classes for raster values
-class_nums <- sort(unique(unlist(lapply(r_list, values))))
-class_nums <- class_nums[class_nums != 3]
-classes <- data.frame(num = class_nums,
-                      cat = c("Risk of regular blooms", 
-                              "Risk of sporadic blooms" 
-                      )
+cat <- c("Risk of regular blooms", 
+         "Risk of sporadic blooms")
+classes <- data.frame(num = 1:length(cat),
+                      cat = cat
 )
+
 # Remove variables no longer needed
-rm(nc_files)
+rm(cat)
 
 ##################################################################################################################################
 # UI
@@ -68,8 +54,8 @@ ui <- fluidPage(
            radioButtons(
              inputId = "season",
              label = "Select a season",
-             choices = names(r_list),
-             selected = names(r_list)[1],  # Default selection
+             choices = seasons_labels,
+             selected = seasons[1],  # Default selection
              inline = TRUE  # Display buttons in a row
            )
     )
@@ -86,12 +72,19 @@ server <- function(input, output, session) {
   
   # React to the selection of Season by selecting the correct raster
   r_season <- reactive({
-    if (!is.null(input$season) &&
-        input$season != "Please select a season") {
-      debug_msg("Filtering raster data to selected season")
-      raster_temp <- r_list[[input$season]]
-      print(paste("Selected season:", input$season))
-      return(raster_temp)
+    if (!is.null(input$season)) {
+      debug_msg("Loading raster data for selected season")
+      
+      # Select the relevant file for the season selected
+      file <- find_matching_string(nc_files, seasons, input$season)
+      
+      # Load the NC file and convert to raster
+      r <- raster::raster(file, varname="CHL")
+      
+      # Convert all raster values where x==0 to is.na(x)
+      r[r==0] <- NA
+      
+      return(r)
     } else {
       return(NULL)
     }

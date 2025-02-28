@@ -5,6 +5,6 @@ account: uk-pheg
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14106610
-bundleId: 9860485
+bundleId: 9865122
 url: https://uk-pheg.shinyapps.io/uk_bloom_risk_shiny_map/
 version: 1

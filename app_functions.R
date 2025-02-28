@@ -1,6 +1,12 @@
+#function for matching the relevant files to seasons
+find_matching_string <- function(a, b, target_b) {
+  if (!(target_b %in% b)) return(NULL)
+  a[grep(target_b, a, fixed = TRUE)]
+}
+
 #generate the base map function
 generate_map <- function(x, pal, classes) {
-  
+
   # Get raster extent
   ext <- extent(x)
   
@@ -26,7 +32,7 @@ generate_map <- function(x, pal, classes) {
   temp_map <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     addProviderTiles(providers$CartoDB.Positron) %>%
     addRasterImage(x_regular, group = classes$cat[classes$num==1], colors = pal, opacity = 0.6) %>%
-    addRasterImage(x_sporadic, group = classes$cat[classes$num==2], colors = pal, opacity = 0.6)
+    addRasterImage(x_sporadic, group = classes$cat[classes$num==2], colors = pal, opacity = 0.6) %>%
     addPolygons(
       lng = unlist(lapply(polygon_coords[[1]], function(coord) coord[1])),
       lat = unlist(lapply(polygon_coords[[1]], function(coord) coord[2])),
@@ -35,14 +41,16 @@ generate_map <- function(x, pal, classes) {
       weight = 1, # Outline weight
       opacity = 0.5 # Outline opacity
     ) %>%
-    addLegend(pal = pal, values=values(x),labFormat = labelFormat(
+    addLegend(pal = pal, values=unique(classes$num),labFormat = labelFormat(
       transform = function(x){classes[which(classes["num"]== x),2]}
-      )
+    )
     ) %>%
     htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'bottomright' }).addTo(this);
       }") %>%
-    addLayersControl(overlayGroups = unique(classes$cat))
+    addLayersControl(overlayGroups = unique(classes$cat),
+                     options = layersControlOptions(collapsed = FALSE) # Prevent collapsing
+    )
   
   return(temp_map)
 }
