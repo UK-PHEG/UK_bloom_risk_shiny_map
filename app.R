@@ -43,6 +43,14 @@ rm(cat)
 # UI
 ##################################################################################################################################
 ui <- fluidPage(
+  
+  tags$head(tags$style(HTML("
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  "))),
+  
   useShinyjs(), # Enable shinyjs features
   
   # Plot title

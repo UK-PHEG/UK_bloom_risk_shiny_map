@@ -50,7 +50,14 @@ generate_map <- function(x, pal, classes) {
       }") %>%
     addLayersControl(overlayGroups = unique(classes$cat),
                      options = layersControlOptions(collapsed = FALSE) # Prevent collapsing
-    )
+    ) %>%
+    htmlwidgets::onRender("function(el, x) {
+      setTimeout(function() {
+        var offset = 150; // Adjust this!
+        var mapHeight = window.innerHeight - offset;
+        el.style.height = mapHeight + 'px';
+      }, 100); // 100 milliseconds delay
+    }") # Make leaflet fill screen
   
   return(temp_map)
 }
