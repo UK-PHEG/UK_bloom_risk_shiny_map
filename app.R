@@ -31,7 +31,9 @@ nc_files <- nc_files[order(order_mapping)]
 
 # assign classes for raster values
 cat <- c("Risk of regular blooms", 
-         "Risk of sporadic blooms")
+         "Risk of sporadic blooms",
+         "Risk of sporadic blooms (extreme)"
+         )
 classes <- data.frame(num = 1:length(cat),
                       cat = cat
 )
@@ -104,9 +106,7 @@ server <- function(input, output, session) {
       debug_msg("Generating map1")
       
       # Create a color palette
-      pal <- colorFactor(palette = c("#38B000", "#CBFE33"),
-                         #palette = c("#FFC100", "#FF7400"),
-                         #palette = brewer.pal(length(unique(classes$num)), "Set1"), 
+      pal <- colorFactor(palette = c("#38B000", "darkgreen", "#FF8C00"),
                          domain = unique(classes$num),
                          na.color = "transparent")
       print(classes)

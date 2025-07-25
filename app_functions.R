@@ -4,9 +4,9 @@ find_matching_string <- function(a, b, target_b) {
   a[grep(target_b, a, fixed = TRUE)]
 }
 
-#generate the base map function
+# functio for generating the map
 generate_map <- function(x, pal, classes) {
-
+  
   # Get raster extent
   ext <- extent(x)
   
@@ -19,45 +19,48 @@ generate_map <- function(x, pal, classes) {
     c(ext@xmin, ext@ymin) # Close the polygon
   ))
   
-  #filter the raster input to respond to layer selection from addLayersControls
+  # Define layers based on new classification
   x_regular <- x
-  x_regular[x_regular == 2] <- NA
-  x_regular[x_regular == 3] <- 1
+  x_regular[!(x %in% c(1, 3, 5, 7))] <- NA
+  x_regular[!is.na(x_regular)] <- 1
   
   x_sporadic <- x
-  x_sporadic[x == 1] <- NA
-  x_sporadic[x == x_sporadic] <- 2
+  x_sporadic[!(x %in% c(2, 3, 4, 5, 6, 7))] <- NA
+  x_sporadic[!is.na(x_sporadic)] <- 2
   
-  # generate leaflet
+  x_sporadic_extreme <- x
+  x_sporadic_extreme[!(x %in% c(4, 5, 6, 7))] <- NA
+  x_sporadic_extreme[!is.na(x_sporadic_extreme)] <- 3
+  
+  # Generate leaflet map
   temp_map <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     addProviderTiles(providers$CartoDB.Positron) %>%
-    addRasterImage(x_regular, group = classes$cat[classes$num==1], colors = pal, opacity = 0.6) %>%
-    addRasterImage(x_sporadic, group = classes$cat[classes$num==2], colors = pal, opacity = 0.6) %>%
+    addRasterImage(x_regular, group = classes$cat[classes$num == 1], colors = pal, opacity = 0.6) %>%
+    addRasterImage(x_sporadic, group = classes$cat[classes$num == 2], colors = pal, opacity = 0.6) %>%
+    addRasterImage(x_sporadic_extreme, group = classes$cat[classes$num == 3], colors = pal, opacity = 0.6) %>%
     addPolygons(
       lng = unlist(lapply(polygon_coords[[1]], function(coord) coord[1])),
       lat = unlist(lapply(polygon_coords[[1]], function(coord) coord[2])),
-      fill = FALSE, # No fill
-      color = "gray", # Outline color
-      weight = 1, # Outline weight
-      opacity = 0.5 # Outline opacity
+      fill = FALSE,
+      color = "gray",
+      weight = 1,
+      opacity = 0.5
     ) %>%
-    addLegend(pal = pal, values=unique(classes$num),labFormat = labelFormat(
-      transform = function(x){classes[which(classes["num"]== x),2]}
-    )
-    ) %>%
+    addLegend(pal = pal, values = unique(classes$num), labFormat = labelFormat(
+      transform = function(x) { classes[which(classes$num == x), 2] }
+    )) %>%
     htmlwidgets::onRender("function(el, x) {
         L.control.zoom({ position: 'bottomright' }).addTo(this);
       }") %>%
     addLayersControl(overlayGroups = unique(classes$cat),
-                     options = layersControlOptions(collapsed = FALSE) # Prevent collapsing
-    ) %>%
+                     options = layersControlOptions(collapsed = FALSE)) %>%
     htmlwidgets::onRender("function(el, x) {
       setTimeout(function() {
-        var offset = 150; // Adjust this!
+        var offset = 150;
         var mapHeight = window.innerHeight - offset;
         el.style.height = mapHeight + 'px';
-      }, 100); // 100 milliseconds delay
-    }") # Make leaflet fill screen
+      }, 100);
+    }")
   
   return(temp_map)
 }
