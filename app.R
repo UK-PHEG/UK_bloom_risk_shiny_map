@@ -106,7 +106,7 @@ server <- function(input, output, session) {
       debug_msg("Generating map1")
       
       # Create a color palette
-      pal <- colorFactor(palette = c("#38B000", "darkgreen", "#FF8C00"),
+      pal <- colorFactor(palette = c("darkgreen", "#38B000", "#FF8C00"),
                          domain = unique(classes$num),
                          na.color = "transparent")
       print(classes)
