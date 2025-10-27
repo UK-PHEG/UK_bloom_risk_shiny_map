@@ -30,9 +30,9 @@ order_mapping <- sapply(nc_files, function(x) {
 nc_files <- nc_files[order(order_mapping)]
 
 # assign classes for raster values
-cat <- c("Risk of regular blooms", 
-         "Risk of sporadic blooms",
-         "Risk of sporadic blooms (extreme)"
+cat <- c("Regular blooms", 
+         "Sporadic blooms",
+         "Sporadic blooms (extreme)"
          )
 classes <- data.frame(num = 1:length(cat),
                       cat = cat
@@ -56,7 +56,7 @@ ui <- fluidPage(
   useShinyjs(), # Enable shinyjs features
   
   # Plot title
-  titlePanel("UK Risk of Algal Blooms"),
+  titlePanel("North Sea and Celtic Seas Risk of Algal Blooms"),
   
   # Single input for mutually exclusive season selection
   fluidRow(
