@@ -14,7 +14,7 @@ library(shinyjs)
 source("app_functions.R")
 
 #define order of seasons
-seasons <- c("winter", "spring", "summer", "autumn")
+seasons <- c("spring", "summer", "autumn")
 seasons_labels <- seasons
 names(seasons_labels) <- tools::toTitleCase(seasons)
 
