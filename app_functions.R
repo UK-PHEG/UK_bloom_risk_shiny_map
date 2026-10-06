@@ -34,7 +34,7 @@ generate_map <- function(x, pal, classes) {
   
   # Generate leaflet map
   temp_map <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-    addProviderTiles(providers$CartoDB.Positron) %>%
+    addProviderTiles(providers$OpenStreetMap) %>%
     addRasterImage(x_regular, group = classes$cat[classes$num == 1], colors = pal, opacity = 0.6) %>%
     addRasterImage(x_sporadic, group = classes$cat[classes$num == 2], colors = pal, opacity = 0.6) %>%
     addRasterImage(x_sporadic_extreme, group = classes$cat[classes$num == 3], colors = pal, opacity = 0.6) %>%
